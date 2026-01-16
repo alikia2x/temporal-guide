@@ -1,47 +1,76 @@
-# temporal-demo
+# Temporal Guide
 
-This is a Next.js application generated with
-[Create Fumadocs](https://github.com/fuma-nama/fumadocs).
+A comprehensive documentation site for JavaScript's Temporal API, built with [Next.js](https://nextjs.org/) and [Fumadocs](https://fumadocs.dev/).
 
-It is a Next.js app with [Static Export](https://nextjs.org/docs/app/guides/static-exports) configured.
+## Quick Start
 
-Run development server:
+### Prerequisites
+
+- Node.js 18+ or Bun
+- npm, pnpm, yarn, or Bun
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/alikia2x/temporal-guide
+cd temporal-guide
+
+# Install dependencies
+npm install
+# or
+pnpm install
+# or
+bun install
+```
+
+### Development
+
+Run the development server:
 
 ```bash
 npm run dev
 # or
 pnpm dev
 # or
-yarn dev
+bun dev
 ```
 
-Open http://localhost:3000 with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Explore
+### Build for Production
 
-In the project, you can see:
+```bash
+npm run build
+# or
+pnpm build
+# or
+bun run build
+```
 
-- `lib/source.ts`: Code for content source adapter, [`loader()`](https://fumadocs.dev/docs/headless/source-api) provides the interface to access your content.
-- `lib/layout.shared.tsx`: Shared options for layouts, optional but preferred to keep.
+The static export will be generated in the `out` directory.
 
-| Route                     | Description                                            |
-| ------------------------- | ------------------------------------------------------ |
-| `app/(home)`              | The route group for your landing page and other pages. |
-| `app/docs`                | The documentation layout and pages.                    |
-| `app/api/search/route.ts` | The Route Handler for search.                          |
+## Resources
 
-### Fumadocs MDX
+### Temporal API
 
-A `source.config.ts` config file has been included, you can customise different options like frontmatter schema.
+- [Temporal Proposal Documentation](https://tc39.es/proposal-temporal/docs/)
+- [MDN Temporal Reference](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal)
+- [Temporal Cookbook](https://github.com/tc39/proposal-temporal/blob/main/docs/cookbook.md)
+- [@js-temporal/polyfill](https://github.com/js-temporal/temporal-polyfill)
 
-Read the [Introduction](https://fumadocs.dev/docs/mdx) for further details.
+## Contributing
 
-## Learn More
+Contributions are welcome! Please follow these steps:
 
-To learn more about Next.js and Fumadocs, take a look at the following
-resources:
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js
-  features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [Fumadocs](https://fumadocs.dev) - learn about Fumadocs
+
+## License
+
+This source code of this project is open source and available under the [MIT License](LICENSE),
+and the content is published under the [Creative Commons Attribution 4.0 International License (CC-BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
