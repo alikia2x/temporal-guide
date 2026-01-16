@@ -1,6 +1,296 @@
 ---
-title: JavaScript Temporal API Demo
-description: the page description
+title: The guide to JavaScript's new Temporal object
+description: A comprehensive guide to JavaScript's new Temporal API. Learn how to handle immutable dates, complex time zones, and precise time arithmetic without the baggage of the legacy Date object.
 ---
 
-## aa
+After nearly three decades of wrestling with JavaScript's flawed Date object, the Temporal API is finally here to rescue us. While native browser support is still rolling out, this Stage 3 TC39 proposal represents the future of date handling in JavaScript. Let's explore what makes it special and how you can start using it today.
+
+## Quick Cheatsheet
+
+```javascript
+// Get current time
+Temporal.Now.instant().epochMilliseconds // Current timestamp (e.g. 1768545502717)
+Temporal.Now.plainDateISO().toString() // Current date (e.g. 2026-01-15)
+Temporal.Now.zonedDateTimeISO('Europe/London').toPlainTime().toLocaleString("en-GB") // Current time in London (e.g. 06:45:35)
+
+// Create dates
+Temporal.PlainDate.from('2026-05-01') // From ISO string
+Temporal.PlainDate.from({year: 2026, month: 5, day: 1}) // From object
+Temporal.ZonedDateTime.from('2026-05-01T14:30[America/New_York]') // With timezone
+
+// Manipulate dates (all operations return new instances)
+date.add({days: 7, months: 1}) // Add duration
+date.subtract({weeks: 2}) // Subtract duration
+date.with({month: 12}) // Change specific fields
+
+// Calculate differences
+later.since(earlier, {smallestUnit: "hour"}).toLocaleString("en-GB") // Get duration between dates (e.g. 104 days, 8 hrs)
+earlier.until(later) // Alternative syntax
+
+// Format and convert
+date.toLocaleString('en-US')
+zonedDateTime.toPlainTime() // Strip date and timezone
+instant.toZonedDateTimeISO(timeZone) // Convert to timezone
+```
+
+---
+
+## What Is the Temporal API?
+
+The Temporal API is a complete rethink of how JavaScript handles dates and times. Unlike the legacy Date object borrowed from Java in 1995, Temporal was designed from the ground up for modern web applications.
+
+**Key improvements over Date:**
+
+- **Immutable objects**: No more accidental mutations causing bugs
+- **Time zone support**: First-class support for IANA time zones
+- **Nanosecond precision**: Perfect for high-performance applications
+- **Clear separation**: Different types for different use cases
+- **Consistent parsing**: Strict ISO 8601 parsing across all browsers
+- **Calendar support**: Built-in support for non-Gregorian calendars
+
+---
+
+## Core Concepts and Types
+
+Temporal provides specialized types for different scenarios:
+
+### Temporal.Instant
+Represents a fixed point in time (like a Unix timestamp) with nanosecond precision, independent of time zones.
+
+```javascript
+// Current time
+const now = Temporal.Now.instant();
+console.log(now.epochMilliseconds); // 1736947200000
+console.log(now.epochNanoseconds); // 1736947200000000000n
+
+// From ISO string
+const instant = Temporal.Instant.from('2026-05-01T12:00:00Z');
+```
+
+### Temporal.ZonedDateTime
+A date-time with a specific time zone. Ideal for scheduling events.
+
+```javascript
+const meeting = Temporal.ZonedDateTime.from('2026-05-01T14:30[America/New_York]');
+console.log(meeting.timeZoneId); // America/New_York
+console.log(meeting.toString()); // 2026-05-01T14:30:00-04:00[America/New_York]
+
+// Get current time in Tokyo
+const tokyoNow = Temporal.Now.zonedDateTimeISO('Asia/Tokyo');
+```
+
+### Temporal.PlainDate
+A calendar date without time or timezone (e.g., birthdays, holidays).
+
+```javascript
+const birthday = Temporal.PlainDate.from('2026-05-15');
+const nextMonth = birthday.add({months: 1}); // 2026-06-15
+console.log(nextMonth.dayOfWeek); // 1 (Monday)
+```
+
+### Temporal.PlainTime
+A wall-clock time without date.
+
+```javascript
+const lunchTime = Temporal.PlainTime.from({hour: 12, minute: 30});
+const later = lunchTime.add({hours: 2}); // 14:30:00
+```
+
+### Temporal.Duration
+Represents a length of time.
+
+```javascript
+const duration = Temporal.Duration.from({hours: 2, minutes: 30});
+console.log(duration.total('minutes')); // 150
+```
+
+---
+
+## Common Operations
+
+### Creating and Parsing
+
+```javascript
+// From strings (strict ISO 8601)
+Temporal.PlainDate.from('2026-05-01'); // Works
+Temporal.PlainDate.from('05/01/2026'); // Throws (ambiguous format)
+
+// From objects
+Temporal.PlainDateTime.from({year: 2026, month: 5, day: 1, hour: 14});
+
+// From epoch
+Temporal.Instant.fromEpochMilliseconds(123456789);
+```
+
+### Date Arithmetic
+
+```javascript
+const today = Temporal.Now.plainDateISO();
+
+// Add 2 weeks
+const inTwoWeeks = today.add({weeks: 2});
+
+// Subtract 3 months
+const threeMonthsAgo = today.subtract({months: 3});
+
+// Automatic overflow handling
+const jan31 = Temporal.PlainDate.from('2026-01-31');
+const feb = jan31.add({months: 1}); // 2026-02-28 (not March 3)
+```
+
+### Comparing Dates
+
+```javascript
+const date1 = Temporal.PlainDate.from('2026-05-01');
+const date2 = Temporal.PlainDate.from('2026-06-01');
+
+console.log(date1.equals(date2)); // false
+console.log(date1.since(date2).sign); // -1
+console.log(date1.until(date2).days); // 31
+
+// Sorting works naturally
+const dates = [date2, date1];
+dates.sort(Temporal.PlainDate.compare); // [date1, date2]
+```
+
+### Working with Time Zones
+
+```javascript
+// Convert between time zones
+const instant = Temporal.Instant.from('2026-05-01T12:00:00Z');
+const nyc = instant.toZonedDateTimeISO('America/New_York');
+const tokyo = instant.toZonedDateTimeISO('Asia/Tokyo');
+
+// Handle DST transitions automatically
+const beforeDst = Temporal.ZonedDateTime.from('2026-03-08T01:30[America/New_York]');
+const afterDst = beforeDst.add({hours: 1}); // Correctly jumps to 03:30
+
+// Current timezone
+const tz = Temporal.Now.timeZoneId();
+console.log(tz); // America/Los_Angeles (or whatever your system uses)
+```
+
+### Formatting
+
+```javascript
+const date = Temporal.Now.plainDateISO();
+
+// Built-in formatting (no libraries needed!)
+date.toLocaleString('en-US', {dateStyle: 'long'}); // "16 Jan 2026, 15:06"
+date.toLocaleString('ja-JP', {dateStyle: 'full'}); // "2026/1/16金曜日"
+
+// ZonedDateTime formatting
+const zoned = Temporal.Now.zonedDateTimeISO();
+zoned.toLocaleString('en-GB', {
+  dateStyle: 'medium',
+  timeStyle: 'short'
+}); // "16 Jan 2026, 15:06"
+```
+
+---
+
+## Migration Guide
+
+### From Date Object
+
+**Problem 1: Mutable dates**
+```javascript
+// Old way (BUG!)
+const date = new Date();
+const tomorrow = new Date(date.setDate(date.getDate() + 1));
+console.log(date); // Oops! Original was mutated
+
+// New way (Safe)
+const date = Temporal.Now.plainDateISO();
+const tomorrow = date.add({days: 1});
+console.log(date); // Unchanged
+```
+
+**Problem 2: Zero-indexed months**
+```javascript
+// Old way (error-prone)
+const may = new Date(2026, 4, 1); // May is 4, not 5!
+
+// New way (intuitive)
+const may = Temporal.PlainDate.from({year: 2026, month: 5, day: 1});
+```
+
+**Problem 3: Timezone confusion**
+```javascript
+// Old way (UTC vs local time headaches)
+const date = new Date('2026-05-01T12:00:00'); // Interpreted differently per browser
+
+// New way (explicit and safe)
+const zoned = Temporal.ZonedDateTime.from('2026-05-01T12:00[America/New_York]');
+const instant = Temporal.Instant.from('2026-05-01T12:00:00Z');
+```
+
+### From dayjs
+
+```javascript
+// dayjs
+dayjs().add(7, 'day').format('YYYY-MM-DD');
+
+// Temporal
+Temporal.Now.plainDateISO().add({days: 7}).toString(); // "2026-01-22"
+
+// Timezone in dayjs requires plugins
+dayjs.tz('2026-05-01', 'America/New_York');
+
+// Temporal has it built-in
+Temporal.PlainDate.from('2026-05-01').toZonedDateTime('America/New_York');
+```
+
+**Migration tips:**
+- Replace `dayjs()` with `Temporal.Now.plainDateISO()`
+- Use `add()`/`subtract()` methods instead of `add()` with string units
+- For timezone operations, use `ZonedDateTime` instead of plugins
+- Replace `.format()` with `.toLocaleString()` for localized output
+
+### From date-fns
+
+```javascript
+// date-fns
+import { addDays, format } from 'date-fns';
+const nextWeek = addDays(new Date(), 7);
+format(nextWeek, 'yyyy-MM-dd');
+
+// Temporal
+const nextWeek = Temporal.Now.plainDateISO().add({days: 7});
+nextWeek.toString(); // Already ISO format
+
+// date-fns timezone requires external libs
+import { utcToZonedTime } from 'date-fns-tz';
+
+// Temporal built-in
+const zoned = Temporal.Now.zonedDateTimeISO('Europe/Paris');
+```
+
+**Migration tips:**
+- Replace `addDays`, `addMonths`, etc. with the unified `add()` method
+- Temporal's types are more explicit (PlainDate vs Date)
+- No need for separate timezone libraries
+- Comparison functions use static methods like `Temporal.PlainDate.compare`
+
+### From moment.js
+
+```javascript
+// moment.js (deprecated)
+moment().add(1, 'month').format('YYYY-MM-DD');
+
+// Temporal
+Temporal.Now.plainDateISO().add({months: 1}).toString();
+
+// moment timezone
+moment.tz('2026-05-01 14:00', 'America/New_York');
+
+// Temporal
+Temporal.ZonedDateTime.from('2026-05-01T14:00[America/New_York]');
+```
+
+## Resources
+
+- [Temporal Proposal Documentation](https://tc39.es/proposal-temporal/docs/)
+- [MDN Temporal Reference](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal)
+- [Temporal Cookbook](https://github.com/tc39/proposal-temporal/blob/main/docs/cookbook.md)
+- [@js-temporal/polyfill](https://github.com/js-temporal/temporal-polyfill)
