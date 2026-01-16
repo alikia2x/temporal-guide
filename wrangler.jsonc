@@ -1,0 +1,9 @@
+{
+    "$schema": "./node_modules/wrangler/config-schema.json",
+    "name": "temporal-guide",
+    "compatibility_date": "2025-06-28",
+	"assets": {
+		"directory": "./out",
+		"not_found_handling": "single-page-application"
+	}
+}
