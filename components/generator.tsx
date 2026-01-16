@@ -54,6 +54,7 @@ export function getGenerateMetadata(slugs: string[]) {
             openGraph: {
                 images: getPageImage().url,
             },
+            metadataBase: "https://temporal.a2x.im/"
         };
     };
 }
